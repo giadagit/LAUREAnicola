@@ -71,11 +71,12 @@
             <label><input type="checkbox" name="q3" value="occhiaie"> Occhiaie permanenti</label>
             <label><input type="checkbox" name="q3" value="pdf"> Conoscenza istintiva delle lezioni da saltare</label>
             <label><input type="checkbox" name="q3" value="sleep"> Capacità di spiegare la tesi anche nel sonno</label>
+            <label><input type="checkbox" name="q3" value="parrin"> Odio non represso nei confronti di Parrino</label>
           </div>
         </div>
 
         <div class="field">
-          <label>4) Quando fai qualcosa di stupido, cosa ti definisci? (Indovina la parola segreta)</label>
+          <label>4) Quando fai qualcosa di stupido, cosa ti definisci? </label>
           <input id="codeInput" type="text" placeholder="Inserisci risposta..." />
           <p class="small">Ricordiamo che secondo la normativa INPS per la disabilità da clown accademico, solo la risposta corretta permette di ottenere la lode parodica.</p>
         </div>
@@ -92,7 +93,7 @@
     </div>
 
     <footer>
-      <div>Documento parodico a scopo celebrativo — non valido ai fini amministrativi.</div>
+      <div>Documento a scopo celebrativo, valido ai fini amministrativi.</div>
     </footer>
   </div>
 
@@ -130,7 +131,7 @@
       if (q2.includes('cena')) {
         msg += '<em>Nota:</em> la cena romantica con Giada è stata segnata come opzione preferenziale e riceve priorità extra ❤️.<br/>';
       }
-      msg += '<br/>Mostri questa pagina al momento del ritiro del regalo per ricevere un timbro simbolico.';
+      msg += '<br/>Mostri questa pagina al momento del ritiro del regalo.';
 
       resultText.innerHTML = msg;
       result.style.display = 'block';
