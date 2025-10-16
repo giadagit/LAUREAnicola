@@ -48,7 +48,15 @@
 
       <form id="verifyForm" onsubmit="return false;">
         <div class="field">
-          <label>1) Quante volte durante la tesi ha pensato "non ce la farò mai"?</label>
+          <label>1) Quante volte durante la triennale ha pensato "non ce la farò mai"?</label>
+          <div class="options">
+            <label><input type="radio" name="q1" value="a"> Meno di 10</label>
+            <label><input type="radio" name="q1" value="b"> Più di 100</label>
+            <label><input type="radio" name="q1" value="c"> Ho smesso di contare</label>
+          </div>
+        </div>
+        
+        <label>2) Quante volte durante la triennale ha pensato di compilare la domanda di "Rinuncia agli studi"?</label>
           <div class="options">
             <label><input type="radio" name="q1" value="a"> Meno di 10</label>
             <label><input type="radio" name="q1" value="b"> Più di 100</label>
@@ -57,7 +65,7 @@
         </div>
 
         <div class="field">
-          <label>2) Il festeggiamento ideale secondo la normativa "104 e Lode" prevede:</label>
+          <label>3) Il festeggiamento ideale secondo la normativa "104 e Lode" prevede:</label>
           <div class="options">
             <label><input type="checkbox" name="q2" value="festa"> Festa con amici</label>
             <label><input type="checkbox" name="q2" value="cena"> Cena romantica con Giada</label>
@@ -66,7 +74,7 @@
         </div>
 
         <div class="field">
-          <label>3) Quale sintomo indica maggiormente l'idoneità accademica? (Selezioni tutte le risposte valide)</label>
+          <label>4) Quale sintomo indica maggiormente l'idoneità accademica? (Selezioni tutte le risposte valide)</label>
           <div class="options">
             <label><input type="checkbox" name="q3" value="occhiaie"> Occhiaie permanenti</label>
             <label><input type="checkbox" name="q3" value="pdf"> Conoscenza istintiva delle lezioni da saltare</label>
@@ -76,9 +84,9 @@
         </div>
 
         <div class="field">
-          <label>4) Quando fai qualcosa di stupido, cosa ti definisci? </label>
+          <label>5) Quando fai qualcosa di stupido, cosa ti definisci? </label>
           <input id="codeInput" type="text" placeholder="Inserisci risposta..." />
-          <p class="small">Ricordiamo che secondo la normativa INPS per la disabilità da clown accademico, solo la risposta corretta permette di ottenere la lode parodica.</p>
+          <p class="small">Ricordiamo che secondo la normativa INPS per la disabilità da clown accademico, solo la risposta corretta permette di ottenere la lode.</p>
         </div>
 
         <div class="field">
@@ -88,7 +96,7 @@
 
       <div id="result" class="result" role="status" aria-live="polite">
         <p id="resultText"></p>
-        <p class="signature">Con affetto, <span id="giadaName">Giada</span></p>
+        <p class="signature">Con affetto<span id="giadaName"></span></p>
       </div>
     </div>
 
@@ -125,7 +133,7 @@
         return;
       }
 
-      let msg = '<strong>Esito: IDONEITÀ RICONOSCIUTA con LODE e status Clown 🥳</strong><br/>';
+      let msg = '<strong>Esito: IDONEITÀ RICONOSCIUTA con LODE🥳</strong><br/>';
       msg += 'Dott. Nicola Lorandini, la Sua pratica è stata valutata positivamente sulla base delle informazioni fornite.<br/>';
       msg += 'Diritti concessi: vantarsi ufficialmente, congedi celebrativi e bonus abbracci (valido con priorità a chi firma questa pagina).<br/>';
       if (q2.includes('cena')) {
