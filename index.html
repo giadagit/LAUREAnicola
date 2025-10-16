@@ -23,11 +23,29 @@
     .signature { margin-top:12px; font-weight:700; }
     .logo { float:right; text-align:right; opacity:0.9; }
     .logo img { width:72px; height:auto; }
+
+    /* confetti canvas overlay */
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      display: none;
+      z-index: 9999;
+    }
+
+    /* small controls row for mute (optional) */
+    .controls { margin-top:8px; display:flex; gap:8px; align-items:center; }
+    .mutebtn { background:#eee; color:#222; padding:6px 10px; border-radius:4px; cursor:pointer; border:1px solid #d1d7de; }
   </style>
 </head>
 
   
 <body>
+  <canvas id="confettiCanvas" aria-hidden="true"></canvas>
+
   <div class="container" role="main" aria-labelledby="title">
     <header>
       <div style="display:flex; align-items:center; justify-content:space-between;">
@@ -71,19 +89,19 @@
         <div class="field">
           <label>3) Il festeggiamento ideale secondo la normativa "104 e Lode" prevede:</label>
           <div class="options">
-            <label><input type="checkbox" name="q2" value="festa"> Festa con amici</label>
-            <label><input type="checkbox" name="q2" value="cena"> Cena romantica con Giada</label>
-            <label><input type="checkbox" name="q2" value="entrambi"> Entrambi, con rinnovo automatico</label>
+            <label><input type="checkbox" name="q3" value="festa"> Festa con amici</label>
+            <label><input type="checkbox" name="q3" value="cena"> Cena romantica con Giada</label>
+            <label><input type="checkbox" name="q3" value="entrambi"> Entrambi, con rinnovo automatico</label>
           </div>
         </div>
 
         <div class="field">
           <label>4) Quale sintomo indica maggiormente l'idoneità accademica? (Selezioni tutte le risposte valide)</label>
           <div class="options">
-            <label><input type="checkbox" name="q3" value="occhiaie"> Occhiaie permanenti</label>
-            <label><input type="checkbox" name="q3" value="pdf"> Conoscenza istintiva delle lezioni da saltare</label>
-            <label><input type="checkbox" name="q3" value="sleep"> Capacità di spiegare la tesi anche nel sonno</label>
-            <label><input type="checkbox" name="q3" value="parrin"> Odio non represso nei confronti di Parrino</label>
+            <label><input type="checkbox" name="q4" value="occhiaie"> Occhiaie permanenti</label>
+            <label><input type="checkbox" name="q4" value="pdf"> Conoscenza istintiva delle lezioni da saltare</label>
+            <label><input type="checkbox" name="q4" value="sleep"> Capacità di spiegare la tesi anche nel sonno</label>
+            <label><input type="checkbox" name="q4" value="parrin"> Odio non represso nei confronti di Parrino</label>
           </div>
         </div>
 
@@ -95,12 +113,15 @@
 
         <div class="field">
           <button class="btn" id="submitBtn">Conferma Idoneità</button>
+          <div class="controls" aria-hidden="true">
+            <button type="button" id="muteBtn" class="mutebtn">Disattiva Suono</button>
+          </div>
         </div>
       </form>
 
       <div id="result" class="result" role="status" aria-live="polite">
         <p id="resultText"></p>
-        <p class="signature">Con affetto</span></p>
+        <p class="signature">Con affetto</p>
       </div>
     </div>
 
@@ -113,20 +134,223 @@
     const btn = document.getElementById('submitBtn');
     const result = document.getElementById('result');
     const resultText = document.getElementById('resultText');
+    const canvas = document.getElementById('confettiCanvas');
+    const muteBtn = document.getElementById('muteBtn');
+
+    let soundEnabled = true;
+    muteBtn.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      muteBtn.textContent = soundEnabled ? 'Disattiva Suono' : 'Attiva Suono';
+    });
 
     function getSelectedValues(name) {
       const els = document.getElementsByName(name);
       return Array.from(els).filter(e => e.checked).map(e => e.value);
     }
 
+    // --- Simple confetti implementation (unchanged) ---
+    class Confetti {
+      constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.particles = [];
+        this.running = false;
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+      }
+      resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      }
+      start(count = 120) {
+        this.running = true;
+        this.canvas.style.display = 'block';
+        const colors = ['#ff4757','#3742fa','#ff7f50','#2ed573','#eccc68','#ffa502','#70a1ff','#a29bfe'];
+        for (let i = 0; i < count; i++) {
+          this.particles.push({
+            x: Math.random() * this.canvas.width,
+            y: -20 - Math.random() * 200,
+            w: 6 + Math.random()*8,
+            h: 8 + Math.random()*8,
+            vx: (Math.random()-0.5) * 6,
+            vy: 2 + Math.random()*5,
+            r: Math.random()*360,
+            vr: (Math.random()-0.5)*10,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            tilt: Math.random()*10,
+          });
+        }
+        if (!this.raf) this.raf = requestAnimationFrame(() => this.update());
+      }
+      stop() {
+        this.running = false;
+      }
+      update() {
+        const ctx = this.ctx;
+        ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+        for (let p of this.particles) {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.03;
+          p.r += p.vr;
+          p.tilt += 0.1;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.r * Math.PI/180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.w/2, -p.h/2 + Math.sin(p.tilt)*3, p.w, p.h);
+          ctx.restore();
+        }
+        this.particles = this.particles.filter(p => p.y < this.canvas.height + 50);
+        if (this.particles.length > 0) {
+          this.raf = requestAnimationFrame(() => this.update());
+        } else {
+          ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+          this.canvas.style.display = 'none';
+          this.running = false;
+          cancelAnimationFrame(this.raf);
+          this.raf = null;
+        }
+      }
+    }
+
+    const confetti = new Confetti(canvas);
+
+    // --- More "divertente" tune using WebAudio API ---
+    // This version uses two oscillators (square + triangle), a stereo pan, vibrato and a percussive noise hit
+    async function playTune() {
+      if (!soundEnabled) return;
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioContextClass();
+        const master = ctx.createGain();
+        master.gain.value = 0.12; // overall volume
+        master.connect(ctx.destination);
+
+        // utility: frequency from MIDI note number (A4 = 440)
+        const midiToFreq = (m) => 440 * Math.pow(2, (m - 69) / 12);
+
+        // create a bouncy percussive noise (clap / rimshot-ish)
+        function playNoise(time, duration = 0.12, volume = 0.6) {
+          const bufferSize = ctx.sampleRate * duration;
+          const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            // filtered white noise for a short hit
+            data[i] = (Math.random() * 2 - 1) * Math.exp(-5 * i / bufferSize);
+          }
+          const nb = ctx.createBufferSource();
+          nb.buffer = buffer;
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(volume, time);
+          g.gain.exponentialRampToValueAtTime(0.001, time + duration);
+          nb.connect(g);
+          g.connect(master);
+          nb.start(time);
+          nb.stop(time + duration + 0.02);
+        }
+
+        // play a single note with two oscillators and vibrato
+        function playNote(freq, start, dur, pan = 0) {
+          // carrier oscillators
+          const osc1 = ctx.createOscillator();
+          osc1.type = 'square';
+          osc1.frequency.setValueAtTime(freq, start);
+
+          const osc2 = ctx.createOscillator();
+          osc2.type = 'triangle';
+          osc2.frequency.setValueAtTime(freq * 2, start); // harmonic for a playful sound
+
+          // vibrato LFO
+          const vibr = ctx.createOscillator();
+          vibr.type = 'sine';
+          vibr.frequency.value = 6; // vibrato speed
+          const vibGain = ctx.createGain();
+          vibGain.gain.value = freq * 0.01; // vibrato depth ~1%
+
+          vibr.connect(vibGain);
+          vibGain.connect(osc1.frequency);
+          vibGain.connect(osc2.frequency);
+
+          // note envelope
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.0001, start);
+          g.gain.exponentialRampToValueAtTime(1.0, start + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+
+          // optional stereo pan
+          const panner = ctx.createStereoPanner();
+          panner.pan.value = pan;
+
+          osc1.connect(g);
+          osc2.connect(g);
+          g.connect(panner);
+          panner.connect(master);
+
+          // start/stop
+          vibr.start(start);
+          osc1.start(start);
+          osc2.start(start);
+          osc1.stop(start + dur + 0.02);
+          osc2.stop(start + dur + 0.02);
+          vibr.stop(start + dur + 0.02);
+        }
+
+        // A playful melody (notes in MIDI numbers) with timing and panning
+        const now = ctx.currentTime + 0.06;
+        const pattern = [
+          {m: 67, d: 0.18, p: -0.4},
+          {m: 71, d: 0.18, p: 0.4},
+          {m: 74, d: 0.30, p: 0},
+          {m: 71, d: 0.18, p: -0.2},
+          {m: 67, d: 0.18, p: 0.2},
+          {m: 62, d: 0.36, p: 0},
+        ];
+
+        let t = now;
+        // lead + occasional octave/harmony
+        for (let i = 0; i < pattern.length; i++) {
+          const item = pattern[i];
+          const freq = midiToFreq(item.m);
+          playNote(freq, t, item.d, item.p);
+          // add a higher harmony note on some beats for cheerfulness
+          if (i % 2 === 0) {
+            playNote(midiToFreq(item.m + 12), t, item.d * 0.9, -item.p);
+          }
+          // percussive noise hit on first and fourth beat to make it "festive"
+          if (i === 0 || i === 3) {
+            playNoise(t, 0.12, 0.45);
+          }
+          t += item.d;
+        }
+
+        // small tail to make it feel finished (a little arpeggio)
+        const arpeggio = [62, 67, 71, 74].map(m => midiToFreq(m));
+        let arpt = t + 0.06;
+        for (let i = 0; i < arpeggio.length; i++) {
+          playNote(arpeggio[i], arpt + i * 0.08, 0.12, (i % 2 === 0) ? -0.3 : 0.3);
+        }
+
+        // close context after the tune ends to free resources
+        const totalDur = (t - now) + 1.0;
+        setTimeout(() => {
+          if (ctx && ctx.state !== 'closed') ctx.close().catch(()=>{});
+        }, totalDur * 1000 + 200);
+      } catch (e) {
+        console.warn('Audio non disponibile:', e);
+      }
+    }
+
+    // --- Main submit handler (unchanged except uses q4 name) ---
     btn.addEventListener('click', () => {
       const q1 = getSelectedValues('q1')[0]; // single choice
-      const q3 = getSelectedValues('q3'); // multiple choice allowed
+      const q2 = getSelectedValues('q2'); // radios for Q2
+      const q3 = getSelectedValues('q3'); // festeggiamento (checkboxes)
+      const q4 = getSelectedValues('q4'); // idoneità symptoms (checkboxes)
       const code = document.getElementById('codeInput').value.trim().toLowerCase();
-      const q2 = getSelectedValues('q2');
 
-      if (!q1 || q3.length === 0) {
-        alert('Per favore risponda a tutte le domande di verifica (1 e 3).');
+      if (!q1 || q4.length === 0) {
+        alert('Per favore risponda a tutte le domande di verifica (1 e 4).');
         return;
       }
       if (code !== 'clown') {
@@ -138,7 +362,7 @@
       let msg = '<strong>Esito: IDONEITÀ RICONOSCIUTA con LODE🥳</strong><br/>';
       msg += 'Dott. Nicola Lorandini, la Sua pratica è stata valutata positivamente sulla base delle informazioni fornite.<br/>';
       msg += 'Diritti concessi: vantarsi ufficialmente, congedi celebrativi e bonus abbracci (valido con priorità a chi firma questa pagina).<br/>';
-      if (q2.includes('cena')) {
+      if (q3.includes('cena')) {
         msg += '<em>Nota:</em> la cena romantica con Giada è stata segnata come opzione preferenziale e riceve priorità extra ❤️.<br/>';
       }
       msg += '<br/>Mostri questa pagina al momento del ritiro del regalo.';
@@ -146,6 +370,12 @@
       resultText.innerHTML = msg;
       result.style.display = 'block';
       result.scrollIntoView({behavior:"smooth"});
+
+      // start confetti and play the more fun tune
+      if (!confetti.running) {
+        confetti.start(160);
+      }
+      playTune();
     });
   </script>
 </body>
