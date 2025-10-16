@@ -80,4 +80,90 @@
           <div class="options">
             <label><input type="checkbox" name="q3" value="occhiaie"> Occhiaie permanenti</label>
             <label><input type="checkbox" name="q3" value="pdf"> Conoscenza istintiva delle lezioni da saltare</label>
-            <label><input type="checkbox" name="q3" value="sleep"> Capacità di spiegare la tesi
+            <label><input type="checkbox" name="q3" value="sleep"> Capacità di spiegare la tesi anche nel sonno</label>
+            <label><input type="checkbox" name="q3" value="parrin"> Odio non represso nei confronti di Parrino</label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>5) Quando fai qualcosa di stupido, cosa ti definisci?</label>
+          <input id="codeInput" type="text" placeholder="Inserisci risposta..." />
+          <p class="small">Ricordiamo che secondo la normativa INPS per la disabilità da clown accademico, solo la risposta corretta permette di ottenere la lode.</p>
+        </div>
+
+        <div class="field">
+          <button class="btn" id="submitBtn">Conferma Idoneità</button>
+        </div>
+      </form>
+
+      <div id="result" class="result" role="status" aria-live="polite">
+        <p id="resultText"></p>
+        <p class="signature">Con affetto, <strong>Giada</strong></p>
+      </div>
+    </div>
+
+    <footer>
+      <div>Documento a scopo celebrativo, valido ai fini amministrativi.</div>
+    </footer>
+  </div>
+
+  <!-- 🎉 Coriandoli -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+  <!-- 🔔 Suono di approvazione -->
+  <audio id="okSound" src="https://www.myinstants.com/media/sounds/ta-da.mp3" preload="auto"></audio>
+
+  <script>
+    const btn = document.getElementById('submitBtn');
+    const result = document.getElementById('result');
+    const resultText = document.getElementById('resultText');
+    const okSound = document.getElementById('okSound');
+
+    function getSelectedValues(name) {
+      const els = document.getElementsByName(name);
+      return Array.from(els).filter(e => e.checked).map(e => e.value);
+    }
+
+    function esplodiConfetti() {
+      confetti({
+        particleCount: 150,
+        spread: 80,
+        origin: { y: 0.6 }
+      });
+    }
+
+    btn.addEventListener('click', () => {
+      const q1 = getSelectedValues('q1')[0];
+      const q3 = getSelectedValues('q3');
+      const code = document.getElementById('codeInput').value.trim().toLowerCase();
+      const qFesteggiamento = getSelectedValues('qFesteggiamento');
+
+      if (!q1 || q3.length === 0) {
+        alert('Per favore risponda a tutte le domande di verifica (1 e 4).');
+        return;
+      }
+      if (code !== 'clown') {
+        resultText.innerHTML = '<strong>Esito: NON IDONEO</strong><br/>Risposta segreta errata. Ricordi: solo il vero pagliaccio accademico ottiene la lode.';
+        result.style.display = 'block';
+        return;
+      }
+
+      // Suono + coriandoli
+      okSound.play().catch(()=>{});
+      esplodiConfetti();
+
+      let msg = '<strong>Esito: IDONEITÀ RICONOSCIUTA con LODE 🥳</strong><br/>';
+      msg += 'Dott. Nicola Lorandini, la Sua pratica è stata valutata positivamente sulla base delle informazioni fornite.<br/>';
+      msg += 'Diritti concessi: vantarsi ufficialmente, congedi celebrativi e bonus abbracci (valido con priorità a chi firma questa pagina).<br/>';
+      if (qFesteggiamento.includes('cena')) {
+        msg += '<em>Nota:</em> la cena romantica con Giada è stata segnata come opzione preferenziale e riceve priorità extra ❤️.<br/>';
+      }
+      msg += '<br/>Mostri questa pagina al momento del ritiro del regalo.';
+
+      resultText.innerHTML = msg;
+      result.style.display = 'block';
+      result.scrollIntoView({behavior:"smooth"});
+    });
+  </script>
+</body>
+</html>
